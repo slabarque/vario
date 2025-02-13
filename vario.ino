@@ -5,6 +5,7 @@
 //#define DEBUG
 
 const unsigned long SAMPLE_RATE = 250;
+const unsigned long ALIVE_TIMEOUT = 5l * 60l * 1000l;  //5 minutes
 const float DESC_RATE_METER_SECOND = 1;
 const unsigned int DESC_FREQ = 300;
 const unsigned long DESC_DURATION = 200;
@@ -33,10 +34,12 @@ float old_pressure = 0;
 float desc_rate = 0;
 float asc_rate = 0;
 bool error = false;
+unsigned long lastAliveTime;
 
 void playSound(unsigned int freq, unsigned long duration, unsigned long pauze = 0, uint8_t volume = 10) {
   toneAC(freq, volume, duration);
   delay(pauze);
+  lastAliveTime = millis();
 }
 
 void playStartSound() {
@@ -57,6 +60,11 @@ void playErrorSound() {
   for (int i = 0; i < ERR_REPEAT; i++) {
     playSound(ERR_FREQ, ERR_DURATION, ERR_PAUZE);
   }
+}
+
+void playAliveSound() {
+  playSound(1200, 100, 150);
+  playSound(400, 250);
 }
 
 float getPressureHectoPascal() {
@@ -104,6 +112,7 @@ void setup() {
     printValue("start pressure", old_pressure, "hPA");
     printValue("asc_rate", asc_rate, "hPA");
     printValue("desc_rate", desc_rate, "dPA");
+    printValue("ALIVE_TIMEOUT", ALIVE_TIMEOUT, "ms");
 
     playSuccessSound();
     printMsg("Success...");
@@ -117,6 +126,7 @@ void loop() {
     old_pressure = new_pressure;
     printValue("pressure", new_pressure, "hPA");
     printValue("rate", rate, "dPA");
+    printValue("millis() - lastAliveTime", millis() - lastAliveTime, "ms");
     if (rate < asc_rate) {
       float pitch = ASC_BASE_FREQ - (rate * ASC_FREQ_INCR);
       if (pitch > ASC_TOP_FREQ) {
@@ -127,6 +137,10 @@ void loop() {
     } else if (rate > desc_rate) {
       printMsg("Descending");
       playSound(DESC_FREQ, DESC_DURATION, SAMPLE_RATE - DESC_DURATION, 6);
+    } else if (millis() - lastAliveTime > ALIVE_TIMEOUT) {
+      printMsg("I'm alive");
+      printValue("millis() - lastAliveTime", millis() - lastAliveTime, "ms");
+      playAliveSound();
     } else {
       delay(SAMPLE_RATE);
     }
