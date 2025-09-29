@@ -6,7 +6,7 @@
 
 const unsigned long SAMPLE_RATE = 250;
 const unsigned long ALIVE_TIMEOUT = 5l * 60l * 1000l;  //5 minutes
-const float DESC_RATE_METER_SECOND = 1;
+const float DESC_RATE_METER_SECOND = 2;
 const unsigned int DESC_FREQ = 300;
 const unsigned long DESC_DURATION = 200;
 const float ASC_RATE_METER_SECOND = 0.3;
